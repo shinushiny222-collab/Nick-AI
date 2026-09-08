@@ -1,47 +1,39 @@
-import os
 import streamlit as st
 from huggingface_hub import InferenceClient
 
 st.set_page_config(
-    page_title="AI Chatbot",
+    page_title="Nick AI",
 )
 
-st.title("Hugging Face AI Chatbot")
+st.title("Nick AI")
+st.write("Ask me anything!")
 
 client = InferenceClient(
-    api_key=os.environ["HF_TOKEN"]
+    api_key=st.secrets["HF_TOKEN"]
 )
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
-question = st.chat_input("Ask something...")
+question = st.chat_input("Ask your question...")
 
 if question:
-
-    st.session_state.messages.append({
-        "role": "user",
-        "content": question
-    })
 
     with st.chat_message("user"):
         st.write(question)
 
     response = client.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=st.session_state.messages
+        model="openai/gpt-oss-20b",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful AI assistant."
+            },
+            {
+                "role": "user",
+                "content": question
+            }
+        ]
     )
 
     answer = response.choices[0].message.content
-
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": answer
-    })
 
     with st.chat_message("assistant"):
         st.write(answer)
